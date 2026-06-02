@@ -1,1 +1,121 @@
-# paste the HTML here
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESM Agent — Researcher Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; padding: 2rem; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 2rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+  .card { background: white; border-radius: 12px; padding: 1rem 1.25rem; border: 0.5px solid #e0e0e0; }
+  .card label { font-size: 12px; color: #888; display: block; margin-bottom: 4px; }
+  .card .value { font-size: 24px; font-weight: 500; }
+  .chart-wrap { background: white; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #e0e0e0; margin-bottom: 1.5rem; }
+  .chart-wrap h2 { font-size: 14px; font-weight: 500; color: #888; margin-bottom: 1rem; }
+  .legend { display: flex; gap: 16px; margin-bottom: 12px; font-size: 12px; color: #666; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 2px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .insight-box { background: white; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #e0e0e0; }
+  .insight-box h2 { font-size: 14px; font-weight: 500; color: #888; margin-bottom: 10px; }
+  .insight-text { font-size: 14px; line-height: 1.7; white-space: pre-wrap; }
+  .refresh-btn { background: white; border: 0.5px solid #ccc; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; float: right; }
+  .status { font-size: 12px; color: #999; margin-bottom: 1rem; }
+  .activity-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } body { padding: 1rem; } }
+</style>
+</head>
+<body>
+<button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+<h1>ESM Agent</h1>
+<p class="subtitle">Boredom & creativity study — live researcher dashboard</p>
+<p class="status" id="status">Loading...</p>
+<div class="grid">
+  <div class="card"><label>Responses</label><div class="value" id="stat-responses">—</div></div>
+  <div class="card"><label>Avg boredom</label><div class="value" id="stat-boredom">—</div></div>
+  <div class="card"><label>Avg focus</label><div class="value" id="stat-focus">—</div></div>
+  <div class="card"><label>Prompts sent</label><div class="value" id="stat-prompts">—</div></div>
+  <div class="card"><label>Compliance</label><div class="value" id="stat-compliance">—</div></div>
+</div>
+<div class="chart-wrap">
+  <h2>Boredom & focus over time</h2>
+  <div class="legend">
+    <span><span class="dot" style="background:#534AB7"></span>Boredom</span>
+    <span><span class="dot" style="background:#1D9E75"></span>Focus</span>
+  </div>
+  <div style="position:relative;height:220px;">
+    <canvas id="trendChart" role="img" aria-label="Line chart of boredom and focus scores over time"></canvas>
+  </div>
+</div>
+<div class="two-col">
+  <div class="card">
+    <h2 style="font-size:14px;font-weight:500;color:#888;margin-bottom:10px;">Activity breakdown</h2>
+    <div id="activity-list">—</div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:14px;font-weight:500;color:#888;margin-bottom:10px;">Participants</h2>
+    <div id="participant-list">—</div>
+  </div>
+</div>
+<div class="insight-box">
+  <h2>Latest Gemini insight</h2>
+  <div class="insight-text" id="insight-text">—</div>
+</div>
+<script>
+const API = 'https://asia-south1-project-d7fef4ca-d9f0-4a6c-a39.cloudfunctions.net/esm-dashboard-api';
+let chart = null;
+async function loadData() {
+  document.getElementById('status').textContent = 'Fetching live data...';
+  try {
+    const res = await fetch(API);
+    const data = await res.json();
+    document.getElementById('status').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+    render(data);
+  } catch(e) {
+    document.getElementById('status').textContent = 'Error: ' + e.message;
+  }
+}
+function render(data) {
+  const responses = data.responses || [];
+  const participants = data.participants || [];
+  const avgB = responses.length ? (responses.reduce((s,r) => s+(r.boredom_score||0),0)/responses.length).toFixed(1) : '—';
+  const avgF = responses.length ? (responses.reduce((s,r) => s+(r.focus_score||0),0)/responses.length).toFixed(1) : '—';
+  document.getElementById('stat-responses').textContent = responses.length;
+  document.getElementById('stat-boredom').textContent = avgB + '/10';
+  document.getElementById('stat-focus').textContent = avgF + '/10';
+  document.getElementById('stat-prompts').textContent = data.prompts_total || 0;
+  document.getElementById('stat-compliance').textContent = (participants[0]?.compliance_rate || 0) + '%';
+  const sorted = [...responses].sort((a,b) => new Date(a.submitted_at)-new Date(b.submitted_at));
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: sorted.map((_,i) => 'R'+(i+1)),
+      datasets: [
+        { label: 'Boredom', data: sorted.map(r=>r.boredom_score), borderColor:'#534AB7', backgroundColor:'rgba(83,74,183,0.08)', tension:0.3, pointRadius:4 },
+        { label: 'Focus', data: sorted.map(r=>r.focus_score), borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.08)', tension:0.3, pointRadius:4, borderDash:[4,3] }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{min:0,max:10}} }
+  });
+  const counts = {};
+  responses.forEach(r => { const a = r.activity_before||'Unknown'; counts[a]=(counts[a]||0)+1; });
+  document.getElementById('activity-list').innerHTML = Object.entries(counts)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([k,v])=>`<div class="activity-row"><span>${k.substring(0,20)}</span><strong>${v}</strong></div>`)
+    .join('') || 'No data';
+  document.getElementById('participant-list').innerHTML = participants
+    .map(p=>`<div style="padding:6px 0;border-bottom:0.5px solid #f0f0f0"><div style="font-weight:500;font-size:13px">${p.name}</div><div style="font-size:12px;color:#888">${p.prompts_answered} answered · ${p.compliance_rate}% compliance</div></div>`)
+    .join('') || 'No participants';
+  if (data.latest_insight) {
+    document.getElementById('insight-text').textContent = data.latest_insight.insight.replace(/\*\*/g,'').replace(/\*/g,'');
+  }
+}
+loadData();
+</script>
+</body>
+</html>
