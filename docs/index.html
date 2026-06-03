@@ -20,9 +20,16 @@
   .legend span { display: flex; align-items: center; gap: 4px; }
   .legend .dot { width: 10px; height: 10px; border-radius: 2px; }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
-  .insight-box { background: white; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #e0e0e0; }
+  .insight-box { background: white; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #e0e0e0; margin-bottom: 1.5rem; }
   .insight-box h2 { font-size: 14px; font-weight: 500; color: #888; margin-bottom: 10px; }
   .insight-text { font-size: 14px; line-height: 1.7; white-space: pre-wrap; }
+  .agent-box { background: #fafff9; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #b6e8c8; margin-bottom: 1.5rem; }
+  .agent-box h2 { font-size: 14px; font-weight: 500; color: #1D9E75; margin-bottom: 10px; }
+  .action-row { padding: 10px 0; border-bottom: 0.5px solid #e8f5ee; font-size: 13px; }
+  .action-row:last-child { border-bottom: none; }
+  .action-trigger { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .action-question { font-weight: 500; color: #1a1a1a; }
+  .action-participant { font-size: 11px; color: #1D9E75; margin-top: 3px; }
   .refresh-btn { background: white; border: 0.5px solid #ccc; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; float: right; }
   .status { font-size: 12px; color: #999; margin-bottom: 1rem; }
   .activity-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
@@ -30,17 +37,21 @@
 </style>
 </head>
 <body>
+
 <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
 <h1>ESM Agent</h1>
 <p class="subtitle">Boredom & creativity study — live researcher dashboard</p>
 <p class="status" id="status">Loading...</p>
+
 <div class="grid">
   <div class="card"><label>Responses</label><div class="value" id="stat-responses">—</div></div>
+  <div class="card"><label>Participants</label><div class="value" id="stat-participants">—</div></div>
   <div class="card"><label>Avg boredom</label><div class="value" id="stat-boredom">—</div></div>
   <div class="card"><label>Avg focus</label><div class="value" id="stat-focus">—</div></div>
   <div class="card"><label>Prompts sent</label><div class="value" id="stat-prompts">—</div></div>
-  <div class="card"><label>Compliance</label><div class="value" id="stat-compliance">—</div></div>
+  <div class="card"><label>Agent actions</label><div class="value" id="stat-actions">—</div></div>
 </div>
+
 <div class="chart-wrap">
   <h2>Boredom & focus over time</h2>
   <div class="legend">
@@ -48,9 +59,10 @@
     <span><span class="dot" style="background:#1D9E75"></span>Focus</span>
   </div>
   <div style="position:relative;height:220px;">
-    <canvas id="trendChart" role="img" aria-label="Line chart of boredom and focus scores over time"></canvas>
+    <canvas id="trendChart"></canvas>
   </div>
 </div>
+
 <div class="two-col">
   <div class="card">
     <h2 style="font-size:14px;font-weight:500;color:#888;margin-bottom:10px;">Activity breakdown</h2>
@@ -61,13 +73,21 @@
     <div id="participant-list">—</div>
   </div>
 </div>
+
+<div class="agent-box">
+  <h2>🤖 Agent actions</h2>
+  <div id="agent-actions">—</div>
+</div>
+
 <div class="insight-box">
   <h2>Latest Gemini insight</h2>
   <div class="insight-text" id="insight-text">—</div>
 </div>
+
 <script>
 const API = 'https://asia-south1-project-d7fef4ca-d9f0-4a6c-a39.cloudfunctions.net/esm-dashboard-api';
 let chart = null;
+
 async function loadData() {
   document.getElementById('status').textContent = 'Fetching live data...';
   try {
@@ -79,17 +99,23 @@ async function loadData() {
     document.getElementById('status').textContent = 'Error: ' + e.message;
   }
 }
+
 function render(data) {
   const responses = data.responses || [];
   const participants = data.participants || [];
-  const avgB = responses.length ? (responses.reduce((s,r) => s+(r.boredom_score||0),0)/responses.length).toFixed(1) : '—';
-  const avgF = responses.length ? (responses.reduce((s,r) => s+(r.focus_score||0),0)/responses.length).toFixed(1) : '—';
+  const actions = data.agent_actions || [];
+  const valid = responses.filter(r => r.boredom_score != null && r.focus_score != null);
+  const avgB = valid.length ? (valid.reduce((s,r) => s+r.boredom_score,0)/valid.length).toFixed(1) : '—';
+  const avgF = valid.length ? (valid.reduce((s,r) => s+r.focus_score,0)/valid.length).toFixed(1) : '—';
+
   document.getElementById('stat-responses').textContent = responses.length;
+  document.getElementById('stat-participants').textContent = participants.length;
   document.getElementById('stat-boredom').textContent = avgB + '/10';
   document.getElementById('stat-focus').textContent = avgF + '/10';
   document.getElementById('stat-prompts').textContent = data.prompts_total || 0;
-  document.getElementById('stat-compliance').textContent = (participants[0]?.compliance_rate || 0) + '%';
-  const sorted = [...responses].sort((a,b) => new Date(a.submitted_at)-new Date(b.submitted_at));
+  document.getElementById('stat-actions').textContent = actions.length;
+
+  const sorted = [...valid].sort((a,b) => new Date(a.submitted_at)-new Date(b.submitted_at));
   if (chart) chart.destroy();
   chart = new Chart(document.getElementById('trendChart'), {
     type: 'line',
@@ -102,19 +128,30 @@ function render(data) {
     },
     options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{min:0,max:10}} }
   });
+
   const counts = {};
   responses.forEach(r => { const a = r.activity_before||'Unknown'; counts[a]=(counts[a]||0)+1; });
   document.getElementById('activity-list').innerHTML = Object.entries(counts)
     .sort((a,b)=>b[1]-a[1])
-    .map(([k,v])=>`<div class="activity-row"><span>${k.substring(0,20)}</span><strong>${v}</strong></div>`)
+    .map(([k,v])=>`<div class="activity-row"><span>${k.substring(0,25)}</span><strong>${v}</strong></div>`)
     .join('') || 'No data';
+
   document.getElementById('participant-list').innerHTML = participants
     .map(p=>`<div style="padding:6px 0;border-bottom:0.5px solid #f0f0f0"><div style="font-weight:500;font-size:13px">${p.name}</div><div style="font-size:12px;color:#888">${p.prompts_answered} answered · ${p.compliance_rate}% compliance</div></div>`)
     .join('') || 'No participants';
+
+  document.getElementById('agent-actions').innerHTML = actions.length ? actions
+    .map(a=>`<div class="action-row">
+      <div class="action-trigger">${a.trigger}</div>
+      <div class="action-question">↳ ${a.followup_question}</div>
+      <div class="action-participant">${a.participant} · ${new Date(a.timestamp).toLocaleString()}</div>
+    </div>`).join('') : '<div style="color:#888;font-size:13px">No agent actions yet — will trigger when boredom ≥ 8</div>';
+
   if (data.latest_insight) {
     document.getElementById('insight-text').textContent = data.latest_insight.insight.replace(/\*\*/g,'').replace(/\*/g,'');
   }
 }
+
 loadData();
 </script>
 </body>
