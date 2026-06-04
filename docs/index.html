@@ -3,13 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESM Agent — Researcher Dashboard</title>
+<title>Momentra Research Lab</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; padding: 2rem; }
-  h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
-  .subtitle { font-size: 14px; color: #666; margin-bottom: 2rem; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; }
+  .header { padding: 1.25rem 2rem; border-bottom: 0.5px solid #e0e0e0; background: white; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 16px; font-weight: 500; }
+  .nav { display: flex; gap: 16px; }
+  .nav a { font-size: 13px; color: #888; text-decoration: none; padding: 6px 12px; border-radius: 6px; }
+  .nav a:hover { background: #f5f5f0; color: #534AB7; }
+  .nav a.active { background: #534AB7; color: white; }
+  .content { padding: 2rem; }
+  .agent-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+  .agent-card { background: white; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #e0e0e0; text-decoration: none; color: #1a1a1a; transition: border-color 0.2s; }
+  .agent-card:hover { border-color: #534AB7; }
+  .agent-card .icon { font-size: 24px; margin-bottom: 8px; }
+  .agent-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .agent-card p { font-size: 12px; color: #888; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 2rem; }
   .card { background: white; border-radius: 12px; padding: 1rem 1.25rem; border: 0.5px solid #e0e0e0; }
   .card label { font-size: 12px; color: #888; display: block; margin-bottom: 4px; }
@@ -30,58 +41,94 @@
   .action-trigger { font-size: 11px; color: #888; margin-bottom: 4px; }
   .action-question { font-weight: 500; color: #1a1a1a; }
   .action-participant { font-size: 11px; color: #1D9E75; margin-top: 3px; }
-  .refresh-btn { background: white; border: 0.5px solid #ccc; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; float: right; }
+  .refresh-btn { background: white; border: 0.5px solid #ccc; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
   .status { font-size: 12px; color: #999; margin-bottom: 1rem; }
   .activity-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
-  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } .content { padding: 1rem; } }
 </style>
 </head>
 <body>
 
-<button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
-<h1>ESM Agent</h1>
-<p class="subtitle">Boredom & creativity study — live researcher dashboard</p>
-<p class="status" id="status">Loading...</p>
-
-<div class="grid">
-  <div class="card"><label>Responses</label><div class="value" id="stat-responses">—</div></div>
-  <div class="card"><label>Participants</label><div class="value" id="stat-participants">—</div></div>
-  <div class="card"><label>Avg boredom</label><div class="value" id="stat-boredom">—</div></div>
-  <div class="card"><label>Avg focus</label><div class="value" id="stat-focus">—</div></div>
-  <div class="card"><label>Prompts sent</label><div class="value" id="stat-prompts">—</div></div>
-  <div class="card"><label>Agent actions</label><div class="value" id="stat-actions">—</div></div>
-</div>
-
-<div class="chart-wrap">
-  <h2>Boredom & focus over time</h2>
-  <div class="legend">
-    <span><span class="dot" style="background:#534AB7"></span>Boredom</span>
-    <span><span class="dot" style="background:#1D9E75"></span>Focus</span>
-  </div>
-  <div style="position:relative;height:220px;">
-    <canvas id="trendChart"></canvas>
+<div class="header">
+  <h1>Momentra</h1>
+  <div class="nav">
+    <a href="index.html" class="active">Dashboard</a>
+    <a href="study-designer.html">Study Designer</a>
+    <a href="statistician.html">Statistician</a>
   </div>
 </div>
 
-<div class="two-col">
-  <div class="card">
-    <h2 style="font-size:14px;font-weight:500;color:#888;margin-bottom:10px;">Activity breakdown</h2>
-    <div id="activity-list">—</div>
-  </div>
-  <div class="card">
-    <h2 style="font-size:14px;font-weight:500;color:#888;margin-bottom:10px;">Participants</h2>
-    <div id="participant-list">—</div>
-  </div>
-</div>
+<div class="content">
 
-<div class="agent-box">
-  <h2>🤖 Agent actions</h2>
-  <div id="agent-actions">—</div>
-</div>
+  <div class="agent-cards">
+    <a class="agent-card" href="study-designer.html">
+      <div class="icon">🔬</div>
+      <h3>Study Designer Agent</h3>
+      <p>Design a full ESM protocol from a research question</p>
+    </a>
+    <a class="agent-card" href="statistician.html">
+      <div class="icon">📊</div>
+      <h3>Statistician Agent</h3>
+      <p>Discover hypotheses and patterns from live data</p>
+    </a>
+    <div class="agent-card" style="opacity:0.5">
+      <div class="icon">🛡️</div>
+      <h3>Data Quality Agent</h3>
+      <p>Coming soon — flags anomalies in real time</p>
+    </div>
+    <div class="agent-card" style="opacity:0.5">
+      <div class="icon">💬</div>
+      <h3>Engagement Agent</h3>
+      <p>Coming soon — adaptive follow-ups and nudges</p>
+    </div>
+  </div>
 
-<div class="insight-box">
-  <h2>Latest Gemini insight</h2>
-  <div class="insight-text" id="insight-text">—</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+    <p class="status" id="status">Loading...</p>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+
+  <div class="grid">
+    <div class="card"><label>Responses</label><div class="value" id="stat-responses">—</div></div>
+    <div class="card"><label>Participants</label><div class="value" id="stat-participants">—</div></div>
+    <div class="card"><label>Avg boredom</label><div class="value" id="stat-boredom">—</div></div>
+    <div class="card"><label>Avg focus</label><div class="value" id="stat-focus">—</div></div>
+    <div class="card"><label>Prompts sent</label><div class="value" id="stat-prompts">—</div></div>
+    <div class="card"><label>Agent actions</label><div class="value" id="stat-actions">—</div></div>
+  </div>
+
+  <div class="chart-wrap">
+    <h2>Boredom & focus over time</h2>
+    <div class="legend">
+      <span><span class="dot" style="background:#534AB7"></span>Boredom</span>
+      <span><span class="dot" style="background:#1D9E75"></span>Focus</span>
+    </div>
+    <div style="position:relative;height:220px;">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2 style="font-size:14px;font-weight:500;color:#888;margin-bottom:10px;">Activity breakdown</h2>
+      <div id="activity-list">—</div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:14px;font-weight:500;color:#888;margin-bottom:10px;">Participants</h2>
+      <div id="participant-list">—</div>
+    </div>
+  </div>
+
+  <div class="agent-box">
+    <h2>🤖 Agent actions</h2>
+    <div id="agent-actions">—</div>
+  </div>
+
+  <div class="insight-box">
+    <h2>Latest Gemini insight</h2>
+    <div class="insight-text" id="insight-text">—</div>
+  </div>
+
 </div>
 
 <script>
@@ -145,7 +192,7 @@ function render(data) {
       <div class="action-trigger">${a.trigger}</div>
       <div class="action-question">↳ ${a.followup_question}</div>
       <div class="action-participant">${a.participant} · ${new Date(a.timestamp).toLocaleString()}</div>
-    </div>`).join('') : '<div style="color:#888;font-size:13px">No agent actions yet — will trigger when boredom ≥ 8</div>';
+    </div>`).join('') : '<div style="color:#888;font-size:13px">No agent actions yet — triggers when boredom ≥ 8</div>';
 
   if (data.latest_insight) {
     document.getElementById('insight-text').textContent = data.latest_insight.insight.replace(/\*\*/g,'').replace(/\*/g,'');
