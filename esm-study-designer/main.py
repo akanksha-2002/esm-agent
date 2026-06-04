@@ -17,7 +17,7 @@ def get_db():
 def call_gemini(prompt):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     body = {"contents": [{"parts": [{"text": prompt}]}]}
-    res = requests.post(url, json=body, timeout=30)
+    res = requests.post(url, json=body, timeout=55)
     data = res.json()
     return data["candidates"][0]["content"]["parts"][0]["text"].strip()
 
@@ -36,29 +36,23 @@ def design_study(request):
 
     researcher_input = data.get("message")
     conversation_history = data.get("history", [])
+    recent_history = conversation_history[-6:]
 
     history_text = ""
-    for turn in conversation_history:
+    for turn in recent_history:
         role = "Researcher" if turn["role"] == "user" else "Study Designer Agent"
-        history_text += f"{role}: {turn['content']}\n"
+        content = turn["content"][:400] + "..." if len(turn["content"]) > 400 else turn["content"]
+        history_text += f"{role}: {content}\n"
 
-    prompt = f"""You are the Study Designer Agent in Momentra, an AI-powered ESM (Experience Sampling Method) research platform.
+    prompt = f"""You are the Study Designer Agent in Momentra, an AI ESM research platform.
 
-Your job is to help researchers design rigorous ESM studies through conversation. You have deep knowledge of:
-- ESM methodology and best practices
-- Psychological measurement and validated scales
-- Sampling strategies (random, event-contingent, signal-contingent)
-- Common confounds and how to control for them
-- ethical considerations in experience sampling research
-
-Conversation so far:
+Recent conversation:
 {history_text}
 
 Researcher: {researcher_input}
 
-Respond as the Study Designer Agent. Be conversational but precise. Ask clarifying questions when needed.
+Based on the conversation, you now have enough information to generate a full protocol. Output it in this exact JSON format wrapped in <PROTOCOL> tags, then add a brief conversational summary after:
 
-If you have enough information to propose a study design, output it as a structured protocol in this exact JSON format wrapped in <PROTOCOL> tags:
 <PROTOCOL>
 {{
   "study_name": "",
@@ -66,52 +60,36 @@ If you have enough information to propose a study design, output it as a structu
   "hypothesis": "",
   "duration_days": 0,
   "prompts_per_day": 0,
-  "sampling_windows": [
-    {{"start": 9, "end": 12}},
-    {{"start": 14, "end": 17}},
-    {{"start": 19, "end": 22}}
-  ],
-  "questions": [
-    {{
-      "text": "",
-      "type": "scale_1_10",
-      "variable": ""
-    }}
-  ],
+  "sampling_windows": [{{"start": 9, "end": 13}}, {{"start": 14, "end": 18}}, {{"start": 19, "end": 22}}],
+  "questions": [{{"text": "", "type": "scale_1_7", "variable": ""}}],
   "inclusion_criteria": "",
   "potential_confounds": [],
   "recommended_sample_size": 0
 }}
 </PROTOCOL>
 
-If you're still gathering information, just respond conversationally. Don't output a protocol until you have: research question, target population, and key variables."""
+After the protocol tag, write 2-3 sentences summarizing what you designed."""
 
     response_text = call_gemini(prompt)
 
     protocol = None
+    display_text = response_text
+
     if "<PROTOCOL>" in response_text:
         try:
             protocol_str = response_text.split("<PROTOCOL>")[1].split("</PROTOCOL>")[0].strip()
             protocol = json.loads(protocol_str)
-            display_text = response_text.split("<PROTOCOL>")[0].strip()
-            if not display_text:
-                display_text = "Here's your study protocol! Review it below and I can refine any part of it."
-
+            parts = response_text.split("</PROTOCOL>")
+            display_text = parts[1].strip() if len(parts) > 1 and parts[1].strip() else "Your study protocol is ready! Review it on the right."
             db = get_db()
             db.study_designs.insert_one({
                 "protocol": protocol,
-                "created_at": datetime.utcnow().isoformat(),
-                "researcher_input": researcher_input
+                "created_at": datetime.utcnow().isoformat()
             })
-        except:
+        except Exception:
             display_text = response_text
-    else:
-        display_text = response_text
 
-    res = jsonify({
-        "response": display_text,
-        "protocol": protocol
-    })
+    res = jsonify({"response": display_text, "protocol": protocol})
     res.headers["Access-Control-Allow-Origin"] = "*"
     return res
 
