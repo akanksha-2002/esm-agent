@@ -15,10 +15,9 @@
   .nav a:hover { color: #534AB7; }
   .nav a.active { background: #534AB7; color: white; }
   .content { padding: 2rem; }
-  .agent-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+  .agent-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 2rem; }
   .agent-card { background: white; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #e0e0e0; text-decoration: none; color: #1a1a1a; display: block; }
   .agent-card:hover { border-color: #534AB7; }
-  .agent-card.disabled { opacity: 0.5; pointer-events: none; }
   .agent-card .icon { font-size: 24px; margin-bottom: 8px; }
   .agent-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
   .agent-card p { font-size: 12px; color: #888; }
@@ -57,32 +56,38 @@
     <a href="study-designer.html">Study Designer</a>
     <a href="statistician.html">Statistician</a>
     <a href="data-quality.html">Data Quality</a>
+    <a href="engagement.html">Engagement</a>
+    <a href="analyst.html">Ask Data</a>
   </div>
 </div>
 
 <div class="content">
-
   <div class="agent-cards">
     <a class="agent-card" href="study-designer.html">
       <div class="icon">🔬</div>
-      <h3>Study Designer Agent</h3>
+      <h3>Study Designer</h3>
       <p>Design a full ESM protocol from a research question</p>
     </a>
     <a class="agent-card" href="statistician.html">
       <div class="icon">📊</div>
-      <h3>Statistician Agent</h3>
+      <h3>Statistician</h3>
       <p>Discover hypotheses and patterns from live data</p>
     </a>
     <a class="agent-card" href="data-quality.html">
       <div class="icon">🛡️</div>
-      <h3>Data Quality Agent</h3>
+      <h3>Data Quality</h3>
       <p>Detect anomalies and validate study integrity</p>
     </a>
     <a class="agent-card" href="engagement.html">
       <div class="icon">💬</div>
-      <h3>Engagement Agent</h3>
-      <p>Coming soon — adaptive follow-ups and nudges</p>
-    </div>
+      <h3>Engagement</h3>
+      <p>Track compliance and adaptive follow-ups</p>
+    </a>
+    <a class="agent-card" href="analyst.html">
+      <div class="icon">🧠</div>
+      <h3>Ask Your Data</h3>
+      <p>Chat with your live study data using AI</p>
+    </a>
   </div>
 
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
@@ -130,7 +135,6 @@
     <h2>Latest Gemini insight</h2>
     <div class="insight-text" id="insight-text">—</div>
   </div>
-
 </div>
 
 <script>
@@ -194,7 +198,7 @@ function render(data) {
       <div class="action-trigger">${a.trigger}</div>
       <div class="action-question">↳ ${a.followup_question}</div>
       <div class="action-participant">${a.participant} · ${new Date(a.timestamp).toLocaleString()}</div>
-    </div>`).join('') : '<div style="color:#888;font-size:13px">No agent actions yet — triggers when boredom ≥ 8</div>';
+    </div>`).join('') : '<div style="color:#888;font-size:13px">No agent actions yet</div>';
 
   if (data.latest_insight) {
     document.getElementById('insight-text').textContent = data.latest_insight.insight.replace(/\*\*/g,'').replace(/\*/g,'');
