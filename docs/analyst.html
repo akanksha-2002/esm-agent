@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Momentra Research Lab | Ask Your Data</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; height: 100vh; display: flex; flex-direction: column; }
+  .header { padding: 1.25rem 2rem; border-bottom: 0.5px solid #e0e0e0; background: white; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .header h1 { font-size: 16px; font-weight: 500; }
+  .nav { display: flex; gap: 8px; }
+  .nav a { font-size: 13px; color: #888; text-decoration: none; padding: 6px 12px; border-radius: 6px; }
+  .nav a:hover { color: #534AB7; }
+  .nav a.active { background: #534AB7; color: white; }
+  .chat-container { flex: 1; display: flex; flex-direction: column; max-width: 800px; width: 100%; margin: 0 auto; padding: 1.5rem; overflow: hidden; }
+  .messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-bottom: 1rem; }
+  .message { display: flex; flex-direction: column; gap: 4px; }
+  .message.user { align-items: flex-end; }
+  .message.agent { align-items: flex-start; }
+  .bubble { padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.6; max-width: 85%; }
+  .message.user .bubble { background: #534AB7; color: white; border-radius: 12px 12px 2px 12px; }
+  .message.agent .bubble { background: white; border: 0.5px solid #e0e0e0; border-radius: 12px 12px 12px 2px; }
+  .agent-label { font-size: 11px; color: #888; margin-left: 4px; }
+  .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+  .suggestion { background: white; border: 0.5px solid #e0e0e0; border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #534AB7; }
+  .suggestion:hover { background: #f0eeff; }
+  .input-row { display: flex; gap: 8px; padding-top: 1rem; border-top: 0.5px solid #e0e0e0; flex-shrink: 0; }
+  .input-row input { flex: 1; padding: 10px 14px; border: 0.5px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; }
+  .input-row input:focus { border-color: #534AB7; }
+  .input-row button { background: #534AB7; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; cursor: pointer; }
+  .input-row button:disabled { background: #ccc; cursor: not-allowed; }
+  .typing { display: flex; gap: 4px; padding: 12px 16px; background: white; border: 0.5px solid #e0e0e0; border-radius: 12px; width: fit-content; }
+  .typing span { width: 6px; height: 6px; background: #ccc; border-radius: 50%; animation: bounce 1s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💬 Ask Your Data</h1>
+  <div class="nav">
+    <a href="index.html">Dashboard</a>
+    <a href="study-designer.html">Study Designer</a>
+    <a href="statistician.html">Statistician</a>
+    <a href="data-quality.html">Data Quality</a>
+    <a href="engagement.html">Engagement</a>
+    <a href="analyst.html" class="active">Ask Data</a>
+  </div>
+</div>
+
+<div class="chat-container">
+  <div class="messages" id="messages">
+    <div class="message agent">
+      <span class="agent-label">Research Analyst</span>
+      <div class="bubble">Hi! I have direct access to your live study data. Ask me anything about your participants, boredom patterns, activity correlations, or data quality. I'll answer using real numbers from your MongoDB database.</div>
+    </div>
+  </div>
+
+  <div class="suggestions" id="suggestions">
+    <span class="suggestion" onclick="ask(this.textContent)">Which activity causes most boredom?</span>
+    <span class="suggestion" onclick="ask(this.textContent)">Who are my most compliant participants?</span>
+    <span class="suggestion" onclick="ask(this.textContent)">Is there a pattern between focus and boredom?</span>
+    <span class="suggestion" onclick="ask(this.textContent)">What time of day has highest boredom?</span>
+    <span class="suggestion" onclick="ask(this.textContent)">Are there any data quality issues?</span>
+  </div>
+
+  <div class="input-row">
+    <input type="text" id="input" placeholder="Ask anything about your study data..." onkeydown="if(event.key==='Enter') sendMessage()"/>
+    <button id="send-btn" onclick="sendMessage()">Ask</button>
+  </div>
+</div>
+
+<script>
+const API = 'https://asia-south1-project-d7fef4ca-d9f0-4a6c-a39.cloudfunctions.net/esm-analyst';
+let history = [];
+
+function ask(text) {
+  document.getElementById('input').value = text;
+  sendMessage();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('input');
+  const btn = document.getElementById('send-btn');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  document.getElementById('suggestions').style.display = 'none';
+  addMessage('user', msg);
+  history.push({ role: 'user', content: msg });
+  input.value = '';
+  btn.disabled = true;
+
+  const typing = addTyping();
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: msg, history: history.slice(-6) })
+    });
+    const data = await res.json();
+    typing.remove();
+    const answer = data.answer || data.error || 'Something went wrong.';
+    addMessage('agent', answer);
+    history.push({ role: 'agent', content: answer });
+  } catch(e) {
+    typing.remove();
+    addMessage('agent', 'Error connecting to the analyst. Please try again.');
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+function addMessage(role, text) {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  if (role === 'agent') {
+    div.innerHTML = `<span class="agent-label">Research Analyst</span><div class="bubble">${text.replace(/\*\*/g,'<strong>').replace(/\*\*/g,'</strong>').replace(/\n/g,'<br>')}</div>`;
+  } else {
+    div.innerHTML = `<div class="bubble">${text}</div>`;
+  }
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+function addTyping() {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'message agent';
+  div.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+</script>
+</body>
+</html>
