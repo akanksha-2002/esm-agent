@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Momentra — AI-Powered ESM Research Platform</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafaf8; color: #1a1a1a; }
+  nav { padding: 1.25rem 3rem; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 0.5px solid #e0e0e0; }
+  nav .logo { font-size: 18px; font-weight: 600; color: #534AB7; }
+  nav a { font-size: 13px; color: #888; text-decoration: none; padding: 8px 16px; border-radius: 8px; background: #534AB7; color: white; }
+  .hero { max-width: 800px; margin: 0 auto; padding: 6rem 2rem 4rem; text-align: center; }
+  .badge { display: inline-block; background: #f0eeff; color: #534AB7; font-size: 12px; padding: 4px 12px; border-radius: 20px; margin-bottom: 1.5rem; font-weight: 500; }
+  .hero h1 { font-size: 48px; font-weight: 600; line-height: 1.15; margin-bottom: 1.5rem; letter-spacing: -0.5px; }
+  .hero h1 span { color: #534AB7; }
+  .hero p { font-size: 18px; color: #555; line-height: 1.7; margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary { background: #534AB7; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 15px; font-weight: 500; }
+  .btn-secondary { background: white; color: #534AB7; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 15px; border: 1px solid #534AB7; }
+  .agents { max-width: 1100px; margin: 5rem auto; padding: 0 2rem; }
+  .agents h2 { font-size: 28px; font-weight: 600; text-align: center; margin-bottom: 0.75rem; }
+  .agents .sub { text-align: center; color: #888; font-size: 16px; margin-bottom: 3rem; }
+  .agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .agent-tile { background: white; border-radius: 16px; padding: 1.5rem; border: 0.5px solid #e0e0e0; }
+  .agent-tile .icon { font-size: 28px; margin-bottom: 12px; }
+  .agent-tile h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .agent-tile p { font-size: 13px; color: #888; line-height: 1.5; }
+  .how { background: white; padding: 5rem 2rem; margin: 4rem 0; }
+  .how h2 { font-size: 28px; font-weight: 600; text-align: center; margin-bottom: 3rem; }
+  .steps { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+  .step { display: flex; gap: 20px; align-items: flex-start; }
+  .step-num { width: 36px; height: 36px; border-radius: 50%; background: #534AB7; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+  .step-content h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .step-content p { font-size: 14px; color: #666; line-height: 1.6; }
+  .stack { max-width: 900px; margin: 5rem auto; padding: 0 2rem; text-align: center; }
+  .stack h2 { font-size: 28px; font-weight: 600; margin-bottom: 3rem; }
+  .stack-pills { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .pill { background: white; border: 0.5px solid #e0e0e0; border-radius: 20px; padding: 8px 18px; font-size: 14px; color: #444; }
+  .footer { background: #1a1a1a; color: #888; padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .footer a { color: #888; text-decoration: none; }
+  @media (max-width: 600px) { .hero h1 { font-size: 32px; } nav { padding: 1rem; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Momentra</div>
+  <a href="index.html">Open Research Lab →</a>
+</nav>
+
+<div class="hero">
+  <div class="badge">🏆 Google Cloud × MongoDB Hackathon 2026</div>
+  <h1>The AI research lab that <span>thinks while it listens</span></h1>
+  <p>Momentra runs your ESM psychology study end-to-end — scheduling prompts, tracking compliance, adapting questions, and discovering hypotheses from your live data automatically.</p>
+  <div class="cta-row">
+    <a href="index.html" class="btn-primary">Open Research Lab</a>
+    <a href="study-designer.html" class="btn-secondary">Design a Study</a>
+  </div>
+</div>
+
+<div class="agents">
+  <h2>Five AI agents. One research platform.</h2>
+  <p class="sub">Each agent handles a different part of the research workflow — all working in parallel.</p>
+  <div class="agent-grid">
+    <div class="agent-tile">
+      <div class="icon">🔬</div>
+      <h3>Study Designer</h3>
+      <p>Describe your research question. Get a full ESM protocol with validated questions, sampling strategy, and confound analysis.</p>
+    </div>
+    <div class="agent-tile">
+      <div class="icon">📊</div>
+      <h3>Statistician</h3>
+      <p>Generates testable hypotheses and quantitative findings from your live data automatically after every new response.</p>
+    </div>
+    <div class="agent-tile">
+      <div class="icon">🛡️</div>
+      <h3>Data Quality</h3>
+      <p>Detects batch submissions, missing data, and straight-lining in real time. Scores your dataset and flags what needs attention.</p>
+    </div>
+    <div class="agent-tile">
+      <div class="icon">💬</div>
+      <h3>Engagement</h3>
+      <p>Tracks compliance per participant. When boredom spikes, generates a personalized follow-up question using Gemini.</p>
+    </div>
+    <div class="agent-tile">
+      <div class="icon">🧠</div>
+      <h3>Ask Your Data</h3>
+      <p>Chat directly with your MongoDB data. Ask "why is boredom high on Tuesdays?" and get an answer grounded in real numbers.</p>
+    </div>
+  </div>
+</div>
+
+<div class="how">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Design your study</h3>
+        <p>Tell the Study Designer Agent your research question. It generates a complete ESM protocol — questions, sampling windows, duration, and confound controls.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Participants respond in real time</h3>
+        <p>Participants fill a lightweight form at random times throughout the day. Every response lands in MongoDB Atlas instantly via a Cloud Function webhook.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Agents reason about the data</h3>
+        <p>After every submission, Gemini 2.5 Flash analyzes the full dataset, generates adaptive follow-up questions for high-boredom responses, and updates the researcher dashboard.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Discover what you didn't know to look for</h3>
+        <p>The Statistician Agent surfaces hypotheses like "Work/studying shows paradoxically high focus and high boredom simultaneously" — patterns you'd miss in a spreadsheet.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stack">
+  <h2>Built with</h2>
+  <div class="stack-pills">
+    <span class="pill">MongoDB Atlas</span>
+    <span class="pill">Google Cloud Functions</span>
+    <span class="pill">Gemini 2.5 Flash</span>
+    <span class="pill">Fivetran</span>
+    <span class="pill">BigQuery</span>
+    <span class="pill">Python / Flask</span>
+    <span class="pill">GitHub Pages</span>
+    <span class="pill">Chart.js</span>
+    <span class="pill">Tally</span>
+  </div>
+</div>
+
+<div class="footer">
+  <span>Momentra — Google Cloud × MongoDB Hackathon 2026</span>
+  <span>Built by <a href="https://github.com/akanksha-2002">Akanksha Bhimte</a></span>
+</div>
+
+</body>
+</html>
