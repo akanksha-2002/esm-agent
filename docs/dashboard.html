@@ -3,209 +3,147 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Momentra Research Lab</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<title>Momentra — AI-Powered ESM Research Platform</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; }
-  .header { padding: 1.25rem 2rem; border-bottom: 0.5px solid #e0e0e0; background: white; display: flex; align-items: center; justify-content: space-between; }
-  .header h1 { font-size: 16px; font-weight: 500; }
-  .nav { display: flex; gap: 8px; }
-  .nav a { font-size: 13px; color: #888; text-decoration: none; padding: 6px 12px; border-radius: 6px; }
-  .nav a:hover { color: #534AB7; }
-  .nav a.active { background: #534AB7; color: white; }
-  .content { padding: 2rem; }
-  .agent-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 2rem; }
-  .agent-card { background: white; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #e0e0e0; text-decoration: none; color: #1a1a1a; display: block; }
-  .agent-card:hover { border-color: #534AB7; }
-  .agent-card .icon { font-size: 24px; margin-bottom: 8px; }
-  .agent-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-  .agent-card p { font-size: 12px; color: #888; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 2rem; }
-  .card { background: white; border-radius: 12px; padding: 1rem 1.25rem; border: 0.5px solid #e0e0e0; }
-  .card label { font-size: 12px; color: #888; display: block; margin-bottom: 4px; }
-  .card .value { font-size: 24px; font-weight: 500; }
-  .chart-wrap { background: white; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #e0e0e0; margin-bottom: 1.5rem; }
-  .chart-wrap h2 { font-size: 14px; font-weight: 500; color: #888; margin-bottom: 1rem; }
-  .legend { display: flex; gap: 16px; margin-bottom: 12px; font-size: 12px; color: #666; }
-  .legend span { display: flex; align-items: center; gap: 4px; }
-  .legend .dot { width: 10px; height: 10px; border-radius: 2px; }
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
-  .insight-box { background: white; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #e0e0e0; margin-bottom: 1.5rem; }
-  .insight-box h2 { font-size: 14px; font-weight: 500; color: #888; margin-bottom: 10px; }
-  .insight-text { font-size: 14px; line-height: 1.7; white-space: pre-wrap; }
-  .agent-box { background: #fafff9; border-radius: 12px; padding: 1.25rem; border: 0.5px solid #b6e8c8; margin-bottom: 1.5rem; }
-  .agent-box h2 { font-size: 14px; font-weight: 500; color: #1D9E75; margin-bottom: 10px; }
-  .action-row { padding: 10px 0; border-bottom: 0.5px solid #e8f5ee; font-size: 13px; }
-  .action-row:last-child { border-bottom: none; }
-  .action-trigger { font-size: 11px; color: #888; margin-bottom: 4px; }
-  .action-question { font-weight: 500; color: #1a1a1a; }
-  .action-participant { font-size: 11px; color: #1D9E75; margin-top: 3px; }
-  .refresh-btn { background: white; border: 0.5px solid #ccc; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
-  .status { font-size: 12px; color: #999; margin-bottom: 1rem; }
-  .activity-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 0.5px solid #f0f0f0; font-size: 13px; }
-  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } .content { padding: 1rem; } }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafaf8; color: #1a1a1a; }
+  nav { padding: 1.25rem 3rem; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 0.5px solid #e0e0e0; }
+  nav .logo { font-size: 18px; font-weight: 600; color: #534AB7; }
+  nav a { font-size: 13px; color: #888; text-decoration: none; padding: 8px 16px; border-radius: 8px; background: #534AB7; color: white; }
+  .hero { max-width: 800px; margin: 0 auto; padding: 6rem 2rem 4rem; text-align: center; }
+  .badge { display: inline-block; background: #f0eeff; color: #534AB7; font-size: 12px; padding: 4px 12px; border-radius: 20px; margin-bottom: 1.5rem; font-weight: 500; }
+  .hero h1 { font-size: 48px; font-weight: 600; line-height: 1.15; margin-bottom: 1.5rem; letter-spacing: -0.5px; }
+  .hero h1 span { color: #534AB7; }
+  .hero p { font-size: 18px; color: #555; line-height: 1.7; margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary { background: #534AB7; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 15px; font-weight: 500; }
+  .btn-secondary { background: white; color: #534AB7; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 15px; border: 1px solid #534AB7; }
+  .agents { max-width: 1100px; margin: 5rem auto; padding: 0 2rem; }
+  .agents h2 { font-size: 28px; font-weight: 600; text-align: center; margin-bottom: 0.75rem; }
+  .agents .sub { text-align: center; color: #888; font-size: 16px; margin-bottom: 3rem; }
+  .agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .agent-tile { background: white; border-radius: 16px; padding: 1.5rem; border: 0.5px solid #e0e0e0; }
+  .agent-tile .icon { font-size: 28px; margin-bottom: 12px; }
+  .agent-tile h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .agent-tile p { font-size: 13px; color: #888; line-height: 1.5; }
+  .how { background: white; padding: 5rem 2rem; margin: 4rem 0; }
+  .how h2 { font-size: 28px; font-weight: 600; text-align: center; margin-bottom: 3rem; }
+  .steps { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+  .step { display: flex; gap: 20px; align-items: flex-start; }
+  .step-num { width: 36px; height: 36px; border-radius: 50%; background: #534AB7; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+  .step-content h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .step-content p { font-size: 14px; color: #666; line-height: 1.6; }
+  .stack { max-width: 900px; margin: 5rem auto; padding: 0 2rem; text-align: center; }
+  .stack h2 { font-size: 28px; font-weight: 600; margin-bottom: 3rem; }
+  .stack-pills { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .pill { background: white; border: 0.5px solid #e0e0e0; border-radius: 20px; padding: 8px 18px; font-size: 14px; color: #444; }
+  .footer { background: #1a1a1a; color: #888; padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .footer a { color: #888; text-decoration: none; }
+  @media (max-width: 600px) { .hero h1 { font-size: 32px; } nav { padding: 1rem; } }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Momentra</h1>
-  <div class="nav">
-    <a href="index.html" class="active">Dashboard</a>
-    <a href="study-designer.html">Study Designer</a>
-    <a href="statistician.html">Statistician</a>
-    <a href="data-quality.html">Data Quality</a>
-    <a href="engagement.html">Engagement</a>
-    <a href="analyst.html">Ask Data</a>
+<nav>
+  <div class="logo">Momentra</div>
+  <a href="dashboard.html">Open Research Lab →</a>
+</nav>
+
+<div class="hero">
+  <div class="badge">🏆 Google Cloud × MongoDB Hackathon 2026</div>
+  <h1>The AI research lab that <span>thinks while it listens</span></h1>
+  <p>Momentra runs your ESM psychology study end-to-end — scheduling prompts, tracking compliance, adapting questions, and discovering hypotheses from your live data automatically.</p>
+  <div class="cta-row">
+    <a href="dashboard.html" class="btn-primary">Open Research Lab</a>
+    <a href="study-designer.html" class="btn-secondary">Design a Study</a>
   </div>
 </div>
 
-<div class="content">
-  <div class="agent-cards">
-    <a class="agent-card" href="study-designer.html">
+<div class="agents">
+  <h2>Five AI agents. One research platform.</h2>
+  <p class="sub">Each agent handles a different part of the research workflow — all working in parallel.</p>
+  <div class="agent-grid">
+    <div class="agent-tile">
       <div class="icon">🔬</div>
       <h3>Study Designer</h3>
-      <p>Design a full ESM protocol from a research question</p>
-    </a>
-    <a class="agent-card" href="statistician.html">
+      <p>Describe your research question. Get a full ESM protocol with validated questions, sampling strategy, and confound analysis.</p>
+    </div>
+    <div class="agent-tile">
       <div class="icon">📊</div>
       <h3>Statistician</h3>
-      <p>Discover hypotheses and patterns from live data</p>
-    </a>
-    <a class="agent-card" href="data-quality.html">
+      <p>Generates testable hypotheses and quantitative findings from your live data automatically after every new response.</p>
+    </div>
+    <div class="agent-tile">
       <div class="icon">🛡️</div>
       <h3>Data Quality</h3>
-      <p>Detect anomalies and validate study integrity</p>
-    </a>
-    <a class="agent-card" href="engagement.html">
+      <p>Detects batch submissions, missing data, and straight-lining in real time. Scores your dataset and flags what needs attention.</p>
+    </div>
+    <div class="agent-tile">
       <div class="icon">💬</div>
       <h3>Engagement</h3>
-      <p>Track compliance and adaptive follow-ups</p>
-    </a>
-    <a class="agent-card" href="analyst.html">
+      <p>Tracks compliance per participant. When boredom spikes, generates a personalized follow-up question using Gemini.</p>
+    </div>
+    <div class="agent-tile">
       <div class="icon">🧠</div>
       <h3>Ask Your Data</h3>
-      <p>Chat with your live study data using AI</p>
-    </a>
-  </div>
-
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-    <p class="status" id="status">Loading...</p>
-    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
-  </div>
-
-  <div class="grid">
-    <div class="card"><label>Responses</label><div class="value" id="stat-responses">—</div></div>
-    <div class="card"><label>Participants</label><div class="value" id="stat-participants">—</div></div>
-    <div class="card"><label>Avg boredom</label><div class="value" id="stat-boredom">—</div></div>
-    <div class="card"><label>Avg focus</label><div class="value" id="stat-focus">—</div></div>
-    <div class="card"><label>Prompts sent</label><div class="value" id="stat-prompts">—</div></div>
-    <div class="card"><label>Agent actions</label><div class="value" id="stat-actions">—</div></div>
-  </div>
-
-  <div class="chart-wrap">
-    <h2>Boredom & focus over time</h2>
-    <div class="legend">
-      <span><span class="dot" style="background:#534AB7"></span>Boredom</span>
-      <span><span class="dot" style="background:#1D9E75"></span>Focus</span>
+      <p>Chat directly with your MongoDB data. Ask "why is boredom high on Tuesdays?" and get an answer grounded in real numbers.</p>
     </div>
-    <div style="position:relative;height:220px;">
-      <canvas id="trendChart"></canvas>
-    </div>
-  </div>
-
-  <div class="two-col">
-    <div class="card">
-      <h2 style="font-size:14px;font-weight:500;color:#888;margin-bottom:10px;">Activity breakdown</h2>
-      <div id="activity-list">—</div>
-    </div>
-    <div class="card">
-      <h2 style="font-size:14px;font-weight:500;color:#888;margin-bottom:10px;">Participants</h2>
-      <div id="participant-list">—</div>
-    </div>
-  </div>
-
-  <div class="agent-box">
-    <h2>🤖 Agent actions</h2>
-    <div id="agent-actions">—</div>
-  </div>
-
-  <div class="insight-box">
-    <h2>Latest Gemini insight</h2>
-    <div class="insight-text" id="insight-text">—</div>
   </div>
 </div>
 
-<script>
-const API = 'https://asia-south1-project-d7fef4ca-d9f0-4a6c-a39.cloudfunctions.net/esm-dashboard-api';
-let chart = null;
+<div class="how">
+  <h2>How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Design your study</h3>
+        <p>Tell the Study Designer Agent your research question. It generates a complete ESM protocol — questions, sampling windows, duration, and confound controls.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Participants respond in real time</h3>
+        <p>Participants fill a lightweight form at random times throughout the day. Every response lands in MongoDB Atlas instantly via a Cloud Function webhook.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Agents reason about the data</h3>
+        <p>After every submission, Gemini 2.5 Flash analyzes the full dataset, generates adaptive follow-up questions for high-boredom responses, and updates the researcher dashboard.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Discover what you didn't know to look for</h3>
+        <p>The Statistician Agent surfaces hypotheses like "Work/studying shows paradoxically high focus and high boredom simultaneously" — patterns you'd miss in a spreadsheet.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-async function loadData() {
-  document.getElementById('status').textContent = 'Fetching live data...';
-  try {
-    const res = await fetch(API);
-    const data = await res.json();
-    document.getElementById('status').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-    render(data);
-  } catch(e) {
-    document.getElementById('status').textContent = 'Error: ' + e.message;
-  }
-}
+<div class="stack">
+  <h2>Built with</h2>
+  <div class="stack-pills">
+    <span class="pill">MongoDB Atlas</span>
+    <span class="pill">Google Cloud Functions</span>
+    <span class="pill">Gemini 2.5 Flash</span>
+    <span class="pill">Fivetran</span>
+    <span class="pill">BigQuery</span>
+    <span class="pill">Python / Flask</span>
+    <span class="pill">GitHub Pages</span>
+    <span class="pill">Chart.js</span>
+    <span class="pill">Tally</span>
+  </div>
+</div>
 
-function render(data) {
-  const responses = data.responses || [];
-  const participants = data.participants || [];
-  const actions = data.agent_actions || [];
-  const valid = responses.filter(r => r.boredom_score != null && r.focus_score != null);
-  const avgB = valid.length ? (valid.reduce((s,r) => s+r.boredom_score,0)/valid.length).toFixed(1) : '—';
-  const avgF = valid.length ? (valid.reduce((s,r) => s+r.focus_score,0)/valid.length).toFixed(1) : '—';
+<div class="footer">
+  <span>Momentra — Google Cloud × MongoDB Hackathon 2026</span>
+  <span>Built by <a href="https://github.com/akanksha-2002">Akanksha Bhimte</a></span>
+</div>
 
-  document.getElementById('stat-responses').textContent = responses.length;
-  document.getElementById('stat-participants').textContent = participants.length;
-  document.getElementById('stat-boredom').textContent = avgB + '/10';
-  document.getElementById('stat-focus').textContent = avgF + '/10';
-  document.getElementById('stat-prompts').textContent = data.prompts_total || 0;
-  document.getElementById('stat-actions').textContent = actions.length;
-
-  const sorted = [...valid].sort((a,b) => new Date(a.submitted_at)-new Date(b.submitted_at));
-  if (chart) chart.destroy();
-  chart = new Chart(document.getElementById('trendChart'), {
-    type: 'line',
-    data: {
-      labels: sorted.map((_,i) => 'R'+(i+1)),
-      datasets: [
-        { label: 'Boredom', data: sorted.map(r=>r.boredom_score), borderColor:'#534AB7', backgroundColor:'rgba(83,74,183,0.08)', tension:0.3, pointRadius:4 },
-        { label: 'Focus', data: sorted.map(r=>r.focus_score), borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.08)', tension:0.3, pointRadius:4, borderDash:[4,3] }
-      ]
-    },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{min:0,max:10}} }
-  });
-
-  const counts = {};
-  responses.forEach(r => { const a = r.activity_before||'Unknown'; counts[a]=(counts[a]||0)+1; });
-  document.getElementById('activity-list').innerHTML = Object.entries(counts)
-    .sort((a,b)=>b[1]-a[1])
-    .map(([k,v])=>`<div class="activity-row"><span>${k.substring(0,25)}</span><strong>${v}</strong></div>`)
-    .join('') || 'No data';
-
-  document.getElementById('participant-list').innerHTML = participants
-    .map(p=>`<div style="padding:6px 0;border-bottom:0.5px solid #f0f0f0"><div style="font-weight:500;font-size:13px">${p.name}</div><div style="font-size:12px;color:#888">${p.prompts_answered} answered · ${p.compliance_rate}% compliance</div></div>`)
-    .join('') || 'No participants';
-
-  document.getElementById('agent-actions').innerHTML = actions.length ? actions
-    .map(a=>`<div class="action-row">
-      <div class="action-trigger">${a.trigger}</div>
-      <div class="action-question">↳ ${a.followup_question}</div>
-      <div class="action-participant">${a.participant} · ${new Date(a.timestamp).toLocaleString()}</div>
-    </div>`).join('') : '<div style="color:#888;font-size:13px">No agent actions yet</div>';
-
-  if (data.latest_insight) {
-    document.getElementById('insight-text').textContent = data.latest_insight.insight.replace(/\*\*/g,'').replace(/\*/g,'');
-  }
-}
-
-loadData();
-</script>
 </body>
 </html>
