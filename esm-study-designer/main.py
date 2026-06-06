@@ -51,7 +51,9 @@ Recent conversation:
 
 Researcher: {researcher_input}
 
-Based on the conversation, you now have enough information to generate a full protocol. Output it in this exact JSON format wrapped in <PROTOCOL> tags, then add a brief conversational summary after:
+Based on the conversation, generate a complete study protocol AND a pre-study simulation.
+
+Output in this exact format:
 
 <PROTOCOL>
 {{
@@ -68,28 +70,69 @@ Based on the conversation, you now have enough information to generate a full pr
 }}
 </PROTOCOL>
 
-After the protocol tag, write 2-3 sentences summarizing what you designed."""
+<SIMULATION>
+{{
+  "predicted_patterns": [
+    "Pattern 1 based on existing ESM literature",
+    "Pattern 2 you are likely to observe",
+    "Pattern 3 that may surprise you"
+  ],
+  "risk_flags": [
+    "Risk 1 that could compromise validity",
+    "Risk 2 to watch out for"
+  ],
+  "expected_compliance_rate": "X%",
+  "statistical_power_note": "Brief note on whether recommended sample size is sufficient",
+  "similar_studies_found": "Brief reference to what similar ESM studies have found",
+  "agent_recommendation": "One specific thing to change or watch before launching"
+}}
+</SIMULATION>
+
+After both tags, write 2-3 sentences summarizing the design and what the simulation predicts."""
 
     response_text = call_gemini(prompt)
 
     protocol = None
+    simulation = None
     display_text = response_text
 
     if "<PROTOCOL>" in response_text:
         try:
             protocol_str = response_text.split("<PROTOCOL>")[1].split("</PROTOCOL>")[0].strip()
             protocol = json.loads(protocol_str)
-            parts = response_text.split("</PROTOCOL>")
-            display_text = parts[1].strip() if len(parts) > 1 and parts[1].strip() else "Your study protocol is ready! Review it on the right."
+        except:
+            pass
+
+    if "<SIMULATION>" in response_text:
+        try:
+            sim_str = response_text.split("<SIMULATION>")[1].split("</SIMULATION>")[0].strip()
+            simulation = json.loads(sim_str)
+        except:
+            pass
+
+    if "</SIMULATION>" in response_text:
+        parts = response_text.split("</SIMULATION>")
+        display_text = parts[1].strip() if len(parts) > 1 and parts[1].strip() else "Your study protocol and pre-study simulation are ready!"
+    elif "</PROTOCOL>" in response_text:
+        parts = response_text.split("</PROTOCOL>")
+        display_text = parts[1].strip() if len(parts) > 1 and parts[1].strip() else "Your study protocol is ready!"
+
+    if protocol:
+        try:
             db = get_db()
             db.study_designs.insert_one({
                 "protocol": protocol,
+                "simulation": simulation,
                 "created_at": datetime.utcnow().isoformat()
             })
-        except Exception:
-            display_text = response_text
+        except:
+            pass
 
-    res = jsonify({"response": display_text, "protocol": protocol})
+    res = jsonify({
+        "response": display_text,
+        "protocol": protocol,
+        "simulation": simulation
+    })
     res.headers["Access-Control-Allow-Origin"] = "*"
     return res
 

@@ -3,46 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Momentra — Study Designer</title>
+<title>Momentra Research Lab | Study Designer</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; }
-  .header { padding: 1.5rem 2rem; border-bottom: 0.5px solid #e0e0e0; background: white; display: flex; align-items: center; justify-content: space-between; }
-  .header h1 { font-size: 18px; font-weight: 500; }
-  .header a { font-size: 13px; color: #888; text-decoration: none; }
-  .container { display: grid; grid-template-columns: 1fr 380px; height: calc(100vh - 61px); }
-  .chat-area { display: flex; flex-direction: column; padding: 1.5rem; gap: 1rem; overflow-y: auto; }
-  .protocol-area { background: white; border-left: 0.5px solid #e0e0e0; padding: 1.5rem; overflow-y: auto; }
-  .protocol-area h2 { font-size: 14px; font-weight: 500; color: #888; margin-bottom: 1rem; }
+  .header { padding: 1.25rem 2rem; border-bottom: 0.5px solid #e0e0e0; background: white; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 16px; font-weight: 500; }
+  .nav { display: flex; gap: 8px; }
+  .nav a { font-size: 13px; color: #888; text-decoration: none; padding: 6px 12px; border-radius: 6px; }
+  .nav a:hover { color: #534AB7; }
+  .nav a.active { background: #534AB7; color: white; }
+  .container { display: grid; grid-template-columns: 1fr 420px; height: calc(100vh - 57px); }
+  .chat-area { display: flex; flex-direction: column; padding: 1.5rem; overflow: hidden; }
   .messages { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-bottom: 1rem; }
-  .message { max-width: 80%; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
+  .message { max-width: 82%; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
   .message.user { background: #534AB7; color: white; align-self: flex-end; border-radius: 12px 12px 2px 12px; }
   .message.agent { background: white; border: 0.5px solid #e0e0e0; align-self: flex-start; border-radius: 12px 12px 12px 2px; }
-  .message.agent .agent-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .agent-label { font-size: 11px; color: #888; margin-bottom: 4px; }
   .input-row { display: flex; gap: 8px; padding-top: 1rem; border-top: 0.5px solid #e0e0e0; }
   .input-row input { flex: 1; padding: 10px 14px; border: 0.5px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; }
   .input-row input:focus { border-color: #534AB7; }
   .input-row button { background: #534AB7; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; cursor: pointer; }
   .input-row button:disabled { background: #ccc; cursor: not-allowed; }
+  .right-panel { background: white; border-left: 0.5px solid #e0e0e0; overflow-y: auto; }
+  .panel-tabs { display: flex; border-bottom: 0.5px solid #e0e0e0; }
+  .tab { flex: 1; padding: 12px; font-size: 13px; text-align: center; cursor: pointer; color: #888; border-bottom: 2px solid transparent; }
+  .tab.active { color: #534AB7; border-bottom-color: #534AB7; font-weight: 500; }
+  .panel-content { padding: 1.25rem; display: none; }
+  .panel-content.active { display: block; }
   .protocol-card { background: #f9f9f9; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 0.5px solid #e0e0e0; }
-  .protocol-card h3 { font-size: 12px; font-weight: 600; color: #534AB7; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .protocol-card h3 { font-size: 11px; font-weight: 600; color: #534AB7; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
   .protocol-card p { font-size: 13px; line-height: 1.5; color: #333; }
   .question-item { padding: 8px 0; border-bottom: 0.5px solid #eee; font-size: 13px; }
   .question-item:last-child { border-bottom: none; }
-  .empty-state { color: #aaa; font-size: 13px; text-align: center; margin-top: 2rem; line-height: 1.8; }
+  .sim-card { border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 0.5px solid #e0e0e0; }
+  .sim-card.predictions { background: #f0f7ff; border-color: #bfdbfe; }
+  .sim-card.risks { background: #fff7ed; border-color: #fed7aa; }
+  .sim-card.recommendation { background: #f0fdf4; border-color: #bbf7d0; }
+  .sim-card h3 { font-size: 11px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .sim-card.predictions h3 { color: #3b82f6; }
+  .sim-card.risks h3 { color: #f59e0b; }
+  .sim-card.recommendation h3 { color: #1D9E75; }
+  .sim-item { font-size: 13px; line-height: 1.5; padding: 4px 0; color: #333; }
+  .sim-item::before { content: "→ "; color: #888; }
+  .empty-state { color: #aaa; font-size: 13px; text-align: center; margin-top: 3rem; line-height: 1.8; }
   .typing { display: flex; gap: 4px; padding: 12px 16px; background: white; border: 0.5px solid #e0e0e0; border-radius: 12px; align-self: flex-start; width: fit-content; }
   .typing span { width: 6px; height: 6px; background: #ccc; border-radius: 50%; animation: bounce 1s infinite; }
   .typing span:nth-child(2) { animation-delay: 0.2s; }
   .typing span:nth-child(3) { animation-delay: 0.4s; }
   @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-  @media (max-width: 768px) { .container { grid-template-columns: 1fr; } .protocol-area { display: none; } }
+  @media (max-width: 768px) { .container { grid-template-columns: 1fr; } .right-panel { display: none; } }
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>🔬 Study Designer Agent</h1>
-  <a href="index.html">← Back to dashboard</a>
+  <div class="nav">
+    <a href="index.html">Dashboard</a>
+    <a href="study-designer.html" class="active">Study Designer</a>
+    <a href="statistician.html">Statistician</a>
+    <a href="data-quality.html">Data Quality</a>
+    <a href="engagement.html">Engagement</a>
+    <a href="analyst.html">Ask Data</a>
+  </div>
 </div>
 
 <div class="container">
@@ -50,7 +74,7 @@
     <div class="messages" id="messages">
       <div class="message agent">
         <div class="agent-label">Study Designer Agent</div>
-        Hi! I'm your AI study designer. Tell me about the research question you want to explore — what psychological phenomenon interests you, and who do you want to study?
+        Hi! I'm your AI research methodologist. Describe the psychological phenomenon you want to study and I'll design a complete ESM protocol — plus a pre-study simulation predicting what your data might look like before you collect a single response.
       </div>
     </div>
     <div class="input-row">
@@ -59,10 +83,16 @@
     </div>
   </div>
 
-  <div class="protocol-area">
-    <h2>Study Protocol</h2>
-    <div id="protocol-content">
-      <div class="empty-state">Your study protocol will appear here once the agent has enough information to design it.</div>
+  <div class="right-panel">
+    <div class="panel-tabs">
+      <div class="tab active" onclick="switchTab('protocol')">Protocol</div>
+      <div class="tab" onclick="switchTab('simulation')">Pre-Study Simulation</div>
+    </div>
+    <div class="panel-content active" id="tab-protocol">
+      <div class="empty-state">Your study protocol will appear here once the agent has enough information.</div>
+    </div>
+    <div class="panel-content" id="tab-simulation">
+      <div class="empty-state">Pre-study simulation will predict patterns, risks, and compliance rates before you launch.</div>
     </div>
   </div>
 </div>
@@ -70,6 +100,13 @@
 <script>
 const API = 'https://asia-south1-project-d7fef4ca-d9f0-4a6c-a39.cloudfunctions.net/esm-study-designer';
 let history = [];
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
 
 async function sendMessage() {
   const input = document.getElementById('input');
@@ -95,9 +132,8 @@ async function sendMessage() {
     addMessage('agent', data.response);
     history.push({ role: 'agent', content: data.response });
 
-    if (data.protocol) {
-      renderProtocol(data.protocol);
-    }
+    if (data.protocol) renderProtocol(data.protocol);
+    if (data.simulation) renderSimulation(data.simulation);
   } catch(e) {
     typing.remove();
     addMessage('agent', 'Sorry, something went wrong. Please try again.');
@@ -112,7 +148,7 @@ function addMessage(role, text) {
   const div = document.createElement('div');
   div.className = `message ${role}`;
   if (role === 'agent') {
-    div.innerHTML = `<div class="agent-label">Study Designer Agent</div>${text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}`;
+    div.innerHTML = `<div class="agent-label">Study Designer Agent</div>${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}`;
   } else {
     div.textContent = text;
   }
@@ -132,16 +168,51 @@ function addTyping() {
 }
 
 function renderProtocol(p) {
-  const content = document.getElementById('protocol-content');
-  content.innerHTML = `
-    <div class="protocol-card"><h3>Study</h3><p><strong>${p.study_name}</strong></p></div>
-    <div class="protocol-card"><h3>Research Question</h3><p>${p.research_question}</p></div>
-    <div class="protocol-card"><h3>Hypothesis</h3><p>${p.hypothesis}</p></div>
+  document.getElementById('tab-protocol').innerHTML = `
+    <div class="protocol-card"><h3>Study</h3><p><strong>${p.study_name || 'Untitled'}</strong></p></div>
+    <div class="protocol-card"><h3>Research Question</h3><p>${p.research_question || '—'}</p></div>
+    <div class="protocol-card"><h3>Hypothesis</h3><p>${p.hypothesis || '—'}</p></div>
     <div class="protocol-card"><h3>Design</h3><p>${p.duration_days} days · ${p.prompts_per_day} prompts/day · ${p.recommended_sample_size} participants recommended</p></div>
-    <div class="protocol-card"><h3>Questions</h3>${p.questions.map(q => `<div class="question-item">📋 ${q.text} <span style="color:#888;font-size:11px">(${q.type})</span></div>`).join('')}</div>
-    <div class="protocol-card"><h3>Potential Confounds</h3><p>${p.potential_confounds.join(', ')}</p></div>
-    <div class="protocol-card"><h3>Inclusion Criteria</h3><p>${p.inclusion_criteria}</p></div>
+    <div class="protocol-card"><h3>Questions</h3>${(p.questions||[]).map(q=>`<div class="question-item">📋 ${q.text} <span style="color:#888;font-size:11px">(${q.type})</span></div>`).join('')}</div>
+    <div class="protocol-card"><h3>Potential Confounds</h3><p>${(p.potential_confounds||[]).join(', ') || '—'}</p></div>
+    <div class="protocol-card"><h3>Inclusion Criteria</h3><p>${p.inclusion_criteria || '—'}</p></div>
   `;
+  // Auto switch to simulation tab when both are ready
+}
+
+function renderSimulation(s) {
+  document.getElementById('tab-simulation').innerHTML = `
+    <div class="sim-card predictions">
+      <h3>📈 Predicted Patterns</h3>
+      ${(s.predicted_patterns||[]).map(p=>`<div class="sim-item">${p}</div>`).join('')}
+    </div>
+    <div class="sim-card risks">
+      <h3>⚠️ Risk Flags</h3>
+      ${(s.risk_flags||[]).map(r=>`<div class="sim-item">${r}</div>`).join('')}
+    </div>
+    <div class="sim-card">
+      <h3>📊 Expected Compliance</h3>
+      <p style="font-size:13px">${s.expected_compliance_rate || '—'}</p>
+    </div>
+    <div class="sim-card">
+      <h3>🔬 Similar Studies</h3>
+      <p style="font-size:13px">${s.similar_studies_found || '—'}</p>
+    </div>
+    <div class="sim-card recommendation">
+      <h3>🤖 Agent Recommendation</h3>
+      <p style="font-size:13px">${s.agent_recommendation || '—'}</p>
+    </div>
+    <div class="sim-card">
+      <h3>📐 Statistical Power</h3>
+      <p style="font-size:13px">${s.statistical_power_note || '—'}</p>
+    </div>
+  `;
+
+  // Switch to simulation tab automatically
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  document.getElementById('tab-simulation').classList.add('active');
 }
 </script>
 </body>
