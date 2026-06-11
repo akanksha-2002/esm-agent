@@ -13,6 +13,18 @@ def get_db():
     client = MongoClient(MONGO_URI)
     return client["esm_agent"]
 
+MONGO_MCP_URL = "https://mcp.mongodb.com/mongodb-atlas"
+MONGO_API_KEY = os.environ.get("MONGODB_API_KEY")
+
+def log_to_mcp(collection, document_id):
+    """Call MongoDB MCP server at runtime."""
+    try:
+        headers = {"Content-Type": "application/json", "apiKey": MONGO_API_KEY}
+        body = {"collection": collection, "documentId": str(document_id)}
+        requests.post(MONGO_MCP_URL, json=body, headers=headers, timeout=5)
+    except Exception:
+        pass
+
 def call_gemini(prompt):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     body = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -65,13 +77,14 @@ Be concise, specific, and actionable. Write for a researcher, not a general audi
 
     insight = call_gemini(prompt)
 
-    db.insights.insert_one({
+    result = db.insights.insert_one({
         "insight": insight,
         "generated_at": datetime.utcnow().isoformat(),
         "based_on_responses": len(valid),
         "avg_boredom": avg_boredom,
         "avg_focus": avg_focus
     })
+    log_to_mcp("insights", result.inserted_id)
 
     return jsonify({
         "insight": insight,

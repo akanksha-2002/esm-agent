@@ -14,12 +14,35 @@ def get_db():
     client = MongoClient(MONGO_URI)
     return client["esm_agent"]
 
-def call_gemini(prompt):
+AGENT_BUILDER_URL = "https://us-west1-aiplatform.googleapis.com/v1/projects/604533028861/locations/us-west1/reasoningEngines/6482025666018541568:query"
+
+def call_agent_builder(prompt):
+    import google.auth
+    import google.auth.transport.requests
+    creds, _ = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    creds.refresh(google.auth.transport.requests.Request())
+    headers = {"Authorization": f"Bearer {creds.token}", "Content-Type": "application/json"}
+    body = {"input": {"message": prompt}}
+    res = requests.post(AGENT_BUILDER_URL, json=body, headers=headers, timeout=55)
+    data = res.json()
+    if "output" in data:
+        return data["output"]
+    return call_gemini_fallback(prompt)
+
+def call_gemini_fallback(prompt):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     body = {"contents": [{"parts": [{"text": prompt}]}]}
     res = requests.post(url, json=body, timeout=55)
     data = res.json()
+    if "candidates" not in data:
+        raise Exception(f"Gemini error: {data}")
     return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+def call_gemini(prompt):
+    try:
+        return call_agent_builder(prompt)
+    except Exception:
+        return call_gemini_fallback(prompt)
 
 @app.route("/", methods=["POST", "OPTIONS"])
 def design_study(request):
